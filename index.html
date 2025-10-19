@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Evento en Directo</title>
+  <style>
+    body, html {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      background-color: #fff;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+    #videoContainer {
+      display: none;
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="videoContainer">
+    <iframe id="ytplayer" src="" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    const videoContainer = document.getElementById('videoContainer');
+    const player = document.getElementById('ytplayer');
+    const videoId = '2HDnkwhz0Gk';
+
+    // Función para obtener el tiempo de inicio del evento según el día
+    function getEventStart(now) {
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      const spainNow = new Date(utc + 2 * 3600000); // GMT+2
+      const day = spainNow.getDay();
+      const event = new Date(spainNow);
+
+      // Evento de prueba solo hoy a 4:05 AM
+      const today = spainNow.getDate();
+      const testDay = today; // hoy
+      if (day === spainNow.getDay() && today === testDay) {
+        event.setHours(4,5,0,0);
+        return event;
+      }
+
+      // Miércoles 17:00
+      if (day === 3) {
+        event.setHours(17,0,0,0);
+        return event;
+      }
+
+      // Domingo 23:30
+      if (day === 0) {
+        event.setHours(23,30,0,0);
+        return event;
+      }
+
+      return null; // No hay evento hoy
+    }
+
+    function checkEvent() {
+      const now = new Date();
+      const eventStart = getEventStart(now);
+      if (!eventStart) {
+        videoContainer.style.display = 'none';
+        player.src = '';
+        return;
+      }
+
+      const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+      const spainNow = new Date(utc + 2 * 3600000); // GMT+2
+      const diff = (spainNow - eventStart) / 1000; // segundos
+
+      if (diff >= 0) {
+        videoContainer.style.display = 'block';
+        const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&start=${Math.floor(diff)}&playsinline=1`;
+        player.src = embedUrl;
+      } else {
+        videoContainer.style.display = 'none';
+        player.src = '';
+      }
+    }
+
+    setInterval(checkEvent, 1000);
+    checkEvent();
+  </script>
+</body>
+</html>
