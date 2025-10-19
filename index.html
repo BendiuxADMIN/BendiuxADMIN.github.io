@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Evento Directo</title>
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: #fff;
+  }
+  #videoContainer {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 1.5s ease-in;
+  }
+  #videoContainer iframe {
+    width: 100vw;
+    height: 100vh;
+    border: none;
+    transform: scale(1.05);
+  }
+  #playButton {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.5em;
+    padding: 1em 2em;
+    background: rgba(0,0,0,0.2);
+    color: #000;
+    border: 2px solid #000;
+    border-radius: 10px;
+    cursor: pointer;
+    display: none;
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+
+<div id="videoContainer"></div>
+<div id="playButton">Toca para activar sonido</div>
+
+<script>
+const videoContainer = document.getElementById('videoContainer');
+const playButton = document.getElementById('playButton');
+const videoId = '2HDnkwhz0Gk';
+let started = false;
+
+// Hora de inicio del evento
+function getEventStart(now) {
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const spainNow = new Date(utc + 2 * 3600000);
+  const day = spainNow.getDay();
+  const today = spainNow.getDate();
+  const event = new Date(spainNow);
+
+  // Hoy prueba a 4:25 AM
+  if (today === today) { event.setHours(4,25,0,0); return event; }
+
+  // Miércoles 17:00
+  if (day === 3) { event.setHours(17,0,0,0); return event; }
+
+  // Domingo 23:30
+  if (day === 0) { event.setHours(23,30,0,0); return event; }
+
+  return null;
+}
+
+// Mostrar botón 1 minuto antes
+function showPlayButtonBeforeEvent(diffSec) {
+  if (diffSec <= 60 && diffSec > 0 && !started) {
+    playButton.style.display = 'block';
+  }
+}
+
+// Iniciar el video
+function startVideo(diffSec) {
+  videoContainer.innerHTML = `
+    <iframe src="https://www.youtube.com/embed/${videoId}?autoplay=1&mute=1&controls=0&rel=0&modestbranding=1&playsinline=1&start=${diffSec}" 
+    allow="autoplay; fullscreen" allowfullscreen></iframe>
+  `;
+  videoContainer.style.display = 'block';
+  setTimeout(()=>{videoContainer.style.opacity = 1;},50);
+  playButton.style.display = 'block';
+}
+
+// Activar sonido al tocar
+playButton.addEventListener('click', () => {
+  const iframe = videoContainer.querySelector('iframe');
+  if (!iframe) return;
+  const src = iframe.src;
+  iframe.src = src.replace('mute=1','mute=0');
+  playButton.style.display = 'none';
+});
+
+// Comprobar evento
+function checkEvent() {
+  const now = new Date();
+  const eventStart = getEventStart(now);
+  if (!eventStart) return;
+
+  const utc = now.getTime() + now.getTimezoneOffset() * 60000;
+  const spainNow = new Date(utc + 2 * 3600000);
+  const diffSec = Math.floor((spainNow - eventStart)/1000);
+
+  if (diffSec >= 0 && !started) {
+    started = true;
+    startVideo(diffSec);
+  } else if (!started) {
+    showPlayButtonBeforeEvent(-diffSec);
+  }
+}
+
+setInterval(checkEvent, 1000);
+checkEvent();
+</script>
+</body>
+</html>
